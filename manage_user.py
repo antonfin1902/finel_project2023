@@ -99,6 +99,12 @@ class Manage_User():
             user = await User.filter(id = user_id).update(registration_step = True)
             print(user)
             print(type(user))
+            full = await bot(GetFullUserRequest(self.sender))
+            print("pini--------------------pppppppppppppppppppppp88888888888888")
+            print(f"the ful is{full}")
+            if full.users[0].username is None or str(full.users[0].username) =="None":
+                await bot.send_file( self.sender , "photoDir/system1photo.jpeg",caption = "כדי ששוכרים או משכירים יוכלו לגשת אליך נא להוסיף username בטלגרם" )
+            #system1photo.jpeg
             await bot.send_message(int(user_id ), message="ההרשמה בוצע בהצלחה ברוך הבא ל telecar",buttons=main_markup())
             await self.event.edit("האישור בוצע בהצלחה", buttons=go_buck_to_menu)
         else:
@@ -113,6 +119,7 @@ class Manage_User():
         await self.user_db.save()
         
     async def menu(self, message =None, markup = None, edit = True):
+        await self.restart_flow()
         if markup == '0' and edit == 'F':
             markup = None
             edit = False
@@ -141,20 +148,23 @@ class Manage_User():
             await self.private_message()
             return
 #send the message and buttons and save in db (after callback this message will be deleted )
-    async def message_sender(self,message,markup=None ,edit =False):
+    async def message_sender(self,message,markup=None ,edit =None):
         m=None
-        if markup is None and edit == False:
+        if markup is None and edit == None:
             m = await self.event.respond(message)
-        elif markup is None and edit == True:
+        elif markup is None and edit :
             m = await self.event.edit(message)
         
-        elif edit == True:
+        elif edit :
             m = await self.event.edit( message ,buttons = markup)
         else:
             m = await self.event.respond( message ,buttons = markup)    
         return m
         
     async def private_message(self):
+        print(f"theflow is:{self.user_db.flow}")
+        if self.user_db.flow is None:
+           self.user_db.flow = "editoe" 
         if self.user_db.flow == "user_registration_first_name":
             print(f"text++++++++++++++++++{self.text}")
             self.user_db.first_name = self.text
@@ -206,7 +216,7 @@ class Manage_User():
             if self.is_admin:
                 markup=admin_main_markup()
                 
-            await self.message_sender("שם חברת הרכב שונה בהצלחה",markup = markup)
+            await self.message_sender("שם חברת הרכב שונה בהצלחה",markup = main_markup())
             
         elif "change_post_car_type" in self.user_db.flow :
             params = self.user_db.flow .split(":")
@@ -216,7 +226,7 @@ class Manage_User():
             markup=main_markup()
             if self.is_admin:
                 markup=admin_main_markup()
-            await self.message_sender("קטגוריית הרכב שונתה בהצלחה",markup=markup)
+            await self.message_sender("קטגוריית הרכב שונתה בהצלחה",markup=main_markup())
             
     
         
@@ -228,7 +238,7 @@ class Manage_User():
             markup=main_markup()
             if self.is_admin:
                 markup=admin_main_markup()
-            await self.message_sender("דגם הרכב שונה בהצלחה",markup=markup)
+            await self.message_sender("דגם הרכב שונה בהצלחה",markup=main_markup())
         
         elif "change_post_car_production_year" in self.user_db.flow :
             params = self.user_db.flow .split(":")
@@ -238,7 +248,7 @@ class Manage_User():
             markup=main_markup()
             if self.is_admin:
                 markup=admin_main_markup()
-            await self.message_sender("שנת היצור שונתה בהצלחה",markup=markup)
+            await self.message_sender("שנת היצור שונתה בהצלחה",markup=main_markup())
             
         elif "change_post_Engine_capacity" in self.user_db.flow :
             params = self.user_db.flow .split(":")
@@ -248,7 +258,7 @@ class Manage_User():
             markup=main_markup()
             if self.is_admin:
                 markup=admin_main_markup()
-            await self.message_sender("נפח המנוע שונה בהצלחה",markup=markup)
+            await self.message_sender("נפח המנוע שונה בהצלחה",markup=main_markup())
             
         elif "change_post_horsepower" in self.user_db.flow :
             params = self.user_db.flow .split(":")
@@ -258,7 +268,7 @@ class Manage_User():
             markup=main_markup()
             if self.is_admin:
                 markup=admin_main_markup()
-            await self.message_sender("כוחות הסוס שונו בהצלחה",markup=markup)
+            await self.message_sender("כוחות הסוס שונו בהצלחה",markup=main_markup())
         #צריך לסדר את שינוי התמונה    
         elif "change_post_photo" in self.user_db.flow :
             params = self.user_db.flow .split(":")
@@ -268,7 +278,7 @@ class Manage_User():
             markup=main_markup()
             if self.is_admin:
                 markup=admin_main_markup()
-            await self.message_sender("כוחות הסוס שונו בהצלחה",markup=markup)
+            await self.message_sender("כוחות הסוס שונו בהצלחה",markup=main_markup())
             
         elif "change_post_txt_content" in self.user_db.flow :
             params = self.user_db.flow .split(":")
@@ -278,7 +288,7 @@ class Manage_User():
             markup=main_markup()
             if self.is_admin:
                 markup=admin_main_markup()
-            await self.message_sender("תוכן הפוסט שונה בהצלחה",markup=markup)
+            await self.message_sender("תוכן הפוסט שונה בהצלחה",markup=main_markup())
 
         elif "change_post_km" in self.user_db.flow :
             params = self.user_db.flow .split(":")
@@ -288,13 +298,20 @@ class Manage_User():
             markup=main_markup()
             if self.is_admin:
                 markup=admin_main_markup()
-            await self.message_sender("הקילוג״ הרכב שונה בהצלחה",markup=markup)
+            await self.message_sender("הקילוג״ הרכב שונה בהצלחה",markup=main_markup())
         
         elif 'search_filter' in self.user_db.flow:
             params = self.user_db.flow.split(":")
             await self.search_filter(params[1],self.text)    
-               
+        
+        elif "add_text_to_post_request" in self.user_db.flow :
+            params = self.user_db.flow.split(":") 
+            await PostRequest.filter(request_id = params[1]).update(request_text = self.text)
+            await self.message_sender("סיבת הסירוב נשמרה בהצלחה",markup=main_markup())
+                
         else:
+            self.user_db.flow = None
+            await self.user_db.save()
             markup=main_markup()
             if self.is_admin:
                 markup=admin_main_markup()
@@ -313,14 +330,20 @@ class Manage_User():
             await self.event.respond('Error loading func save_all_lest_messag please try again::', parse_mode='html' ,buttons=markup)
             print("'Error loading func save_all_lest_messag please try again::",e)
 
-
+    """User_format= "שם : {} {} \n אימייל: {} \n מספר טלפון: {} \n דירוגים שלי: \n דירוגים שלי כמשכיר  \n זמינות:{} ניקיון: {} אמינות: {} 
+        User_format1= "שם : {} {} \n אימייל: {} \n מספר טלפון: {} \n עדיין לא דירגו אותך """
     async def user_profile(self):
         #calculate avrage garde for seller..need to conver as function 
         try:
             # seller_rate_list=[self.user_db.seller_payment_grade,self.user_db.seller_availability_grade,self.user_db.seller_cleaning_grade,self.user_db.sellerre_liability_grade]
             # avg_seller_rate=int(map(sum,seller_rate_list))/len(seller_rate_list)
-
-            user_text= User_format.format(self.user_db.first_name,self.user_db.last_name,self.user_db.email,self.user_db.phone_number,144,self.user_db.buyer_payment_grade,self.user_db.buyer_availability_grade,self.user_db.buyer_cleaning_grade,self.user_db.buyer_reliability_grade)
+            print(f"the fuking grage is {self.user_db.seller_availability_grade}")
+            grade_amunt = len(await PostRequest.filter(request_reciever_id = self.sender, step_grade = "F").all())
+            if  grade_amunt !=0: 
+                user_text= User_format.format(self.user_db.first_name,self.user_db.last_name,self.user_db.email,self.user_db.phone_number,self.user_db.seller_availability_grade,self.user_db.seller_cleaning_grade,self.user_db.sellerre_liability_grade)
+            else:
+                user_text= User_format1.format(self.user_db.first_name,self.user_db.last_name,self.user_db.email,self.user_db.phone_number)
+            #user_text+= f"\n דירוג בתור משכיר \n אמינות{self.user_db.sellerre_liability_grade} ניקיון{self.user_db.seller_cleaning_grade} זמינות{self.user_db.seller_availability_grade}"
             print(f"user_text::{user_text}")
             await self.event.edit(user_text,buttons= go_buck_to_menu)
 
@@ -328,7 +351,7 @@ class Manage_User():
         except Exception as e:
             print(e)
         #await self.message_sender(text)
-    async def my_posts(self,page=0):
+    async def my_posts(self,page=0):    
         if type(page)is int:
             m =await self.event.edit("ttt")
             await bot.delete_messages(entity=self.sender, message_ids= [m.id])
@@ -638,12 +661,9 @@ class Manage_User():
                 await self.post_in_work.save()
                 self.user_db.flow= "add_post:car_type"
                 await self.user_db.save()
-                #print(f"post id??????:::{self.post_in_work.id}")
-                await self.message_sender("נא להוסיף את שם הדגם של הרכב ")
+                await self.message_sender("נא להוסיף את סוג הרכב ")
             except Exception as e:
                 print(f"eror in add_post flow=none :{e}")
-                # self.post_in_work.car_company = None
-                # await self.post_in_work.save()
                 self.user_db.flow= "add_post:car_company"
                 await self.message_sender("משהו השתבש בהכנסת יצרן הרכב אנא נסו שוב")
 
@@ -658,7 +678,8 @@ class Manage_User():
                     await self.post_in_work.save()
                     self.user_db.flow= "add_post:car_photo"
                     await self.user_db.save()
-                    await self.message_sender("נא להוסיף את סוג הרכב ")  
+                    flow = "car_photo"
+                    #await self.message_sender("נא לשלוח טקסט סתמי עד 10 תוים להתחלת תהליך קליתת התמונה")  
                 except Exception as e:
                     print(f"eror in add_post flow=car_type :{e}")
                     
@@ -690,7 +711,7 @@ class Manage_User():
                     if flag:
                         self.user_db.flow= "add_post:car_model"
                         await self.user_db.save()
-                        await self.message_sender("נא להוסיף את סוג הרכב ")  
+                        await self.message_sender("נא להוסיף את דגם הרכב ")  
                         
                     else:
                         await self.message_sender('משהו השתבש בהכנסת תמונה נסה שוב')
@@ -774,7 +795,7 @@ class Manage_User():
                 await self.post_in_work.save()
                 self.user_db.flow= "add_post:txt_content"
                 await self.user_db.save()
-                await self.message_sender("נא להוסיף תוכן הפוסט")
+                await self.message_sender("נא להוסיף תוכן הפוסט ואת תאריכי הזמינות של הרכב לדוגמא: 22.3-28.3")
             except Exception as e:
                 print(f"eror in add_post flow=horsepower :{e}")
                 # self.post_in_work.horsepower = None
@@ -1108,8 +1129,8 @@ class Manage_User():
 # ------------------------------------------------------------------------ post by area
     
     async def choose_post_area(self):
-        
-        all_posts = await Post.filter().all()
+     
+        all_posts = await Post.filter(is_order = False).all()
         print(f"{all_posts}+++++++++)))))")
         area_list=[]
         for post in all_posts:
@@ -1130,8 +1151,8 @@ class Manage_User():
         
         if type(page)is str:
             page = int(page)
-            
-        posts = await Post.filter(area = area ).all()
+            #.filter(is_order = False)
+        posts = await Post.filter(area = area ,is_order = False ).all()
         prev_flag = True
         next_flag = True
         print(len(posts))
@@ -1199,11 +1220,14 @@ class Manage_User():
 
     #------------ Search filters-----------------------
     async def search_by_car_company(self):
-        posts = await Post.all()
+        posts = await Post.filter(is_order = False).all()
+        posts_info_list = []
         posts_info = ""
         for post in posts:
-            posts_info += "," + str(post.car_company)
-            
+            if str(post.car_company) not in  posts_info_list:
+                posts_info += "," + str(post.car_company)
+                posts_info_list.append(str(post.car_company))
+               
         await self.event.edit("שמות החברות הקיימות במערכת הן :" + posts_info + "\n" + "אנא שלח את שם חברת הרכב")
         #await self.message_sender("שמות החברות הקיימות במערכת הן :" + posts_info + "\n" + "אנא שלח את שם חברת הרכב")
         filter = 'company'
@@ -1212,10 +1236,16 @@ class Manage_User():
         await self.user_db.save()
 
     async def search_by_car_name(self):
-        posts = await Post.all()
+        posts = await Post.filter(is_order = False).all()
+        posts_info_list = []
         posts_info = ""
         for post in posts:
-            posts_info += "," + str(post.car_name)
+            if str(post.car_name) not in  posts_info_list:
+                posts_info += "," + str(post.car_name)
+                posts_info_list.append(str(post.car_name))
+        # posts_info = ""
+        # for post in posts:
+        #     posts_info += "," + str(post.car_name)
             
         await self.event.edit("שמות הרכבים הקיימים במערכת הן :" + posts_info + "\n" + "אנא שלח את שם הרכב")
         #await self.message_sender("אנא שלח את שם הרכב")
@@ -1224,10 +1254,16 @@ class Manage_User():
         await self.user_db.save()
 
     async def search_by_car_type(self):
-        posts = await Post.all()
+        posts = await Post.filter(is_order = False).all()
+        posts_info_list = []
         posts_info = ""
         for post in posts:
-            posts_info += "," + str(post.car_type)
+            if str(post.car_type) not in  posts_info_list:
+                posts_info += "," + str(post.car_type)
+                posts_info_list.append(str(post.car_type))
+        # posts_info = ""
+        # for post in posts:
+        #     posts_info += "," + str(post.car_type)
             
         await self.event.edit("שמות סוגי הרכבים הקיימים במערכת הן :" + posts_info + "\n" + "אנא שלח את סוג רכב ")
         #await self.message_sender("אנא שלח את סוג רכב ")
@@ -1236,10 +1272,16 @@ class Manage_User():
         await self.user_db.save()
 
     async def search_by_car_model(self):
-        posts = await Post.all()
+        posts = await Post.filter(is_order = False).all()
+        posts_info_list = []
         posts_info = ""
         for post in posts:
-            posts_info += "," + str(post.car_model)
+            if str(post.car_model) not in  posts_info_list:
+                posts_info += "," + str(post.car_model)
+                posts_info_list.append(str(post.car_model))
+        # posts_info = ""
+        # for post in posts:
+        #     posts_info += "," + str(post.car_model)
             
         await self.event.edit("שמות סוגי הדגמים הקיימים במערכת הן :" + posts_info + "\n" + "אנא שלח את דגם הרכב")
         #await self.message_sender("אנא שלח את דגם הרכב")
@@ -1248,10 +1290,16 @@ class Manage_User():
         await self.user_db.save()
 
     async def search_by_car_production_year(self):
-        posts = await Post.all()
+        posts = await Post.filter(is_order = False).all()
+        posts_info_list = []
         posts_info = ""
         for post in posts:
-            posts_info += "," + str(post.car_production_year)
+            if str(post.car_production_year) not in  posts_info_list:
+                posts_info += "," + str(post.car_production_year)
+                posts_info_list.append(str(post.car_production_year))
+        # posts_info = ""
+        # for post in posts:
+        #     posts_info += "," + str(post.car_production_year)
             
         await self.event.edit("הנות יצור הרכבים הקיימים במערכת הן:" + posts_info + "\n" + "אנא שלח את שנת יצור הרכב")
         #await self.message_sender("אנא שלח את שנת יצור הרכב")
@@ -1271,15 +1319,15 @@ class Manage_User():
         prev_flag=True
 
         if filter_type == 'company':
-            posts = await Post.filter(car_company = query).all()
+            posts = await Post.filter(car_company = query ,is_order = False).all()
         if filter_type == 'name':
-            posts = await Post.filter(car_name = query).all()
+            posts = await Post.filter(car_name = query ,is_order = False).all()
         if filter_type == 'type':
-            posts = await Post.filter(car_type = query).all()
+            posts = await Post.filter(car_type = query ,is_order = False).all()
         if filter_type == 'model':
-            posts = await Post.filter(car_model = query).all()
+            posts = await Post.filter(car_model = query ,is_order = False).all()
         if filter_type == 'year':
-            posts = await Post.filter(car_production_year = query).all()
+            posts = await Post.filter(car_production_year = query ,is_order = False).all()
 
         print(len(posts))
         if len(posts) == 0:
@@ -1342,7 +1390,12 @@ class Manage_User():
                     #print(full)       
                     #print(full.users[0].username)
                     user_link = "@" + str(full.users[0].username)
-                    post_text = Post_format_additional.format(user_link,post.phone_number,post.txt_content,str(post.date_and_time),post.address)
+                    post_text = Post_format_additional.format(user_link,post.phone_number,post.txt_content,str(post.date_and_time)[:10],post.address)
+                    grade_amunt = len(await PostRequest.filter(request_reciever_id = post.owner.id, step_grade = "F").all())
+                    if grade_amunt != 0:
+                        post_text += f"\nדירוג המשכיר ::\n כמות דירוגים :{grade_amunt}\n אמינות:{post.owner.sellerre_liability_grade}🎖 \n זמינות :{post.owner.seller_availability_grade} 🎖\n ניקיון {post.owner.seller_cleaning_grade} 🎖"
+                    else:
+                        post_text += "\n למשכיר זה אין עוד דירוגים"
                     if not area:
                         beck_button=[Button.inline(" חזור",f'search_filter:{filter}:{query}:{page}')]
                     else:
@@ -1374,11 +1427,31 @@ class Manage_User():
 
     
     async def order_history(self):
+        await self.event.edit("אנא בחר" , buttons = order_history_byuer_or_seller)
+    
+    async def order_history_option_owner(self):
         await self.event.edit("אנא בחר" , buttons = order_history_option_buttons())
-        
-    async def order_history_request(self):
+    
+    async def order_history_option_renter(self):
+        await self.event.edit("אנא בחר" , buttons = order_history_option_buttons_renter())
+    
+    #order_history_byuer_or_seller = [Button.inline("בקשות בתור משכיר",'order_history_option_owner'), Button.inline("בקשות בתור שוכר",'order_history_option_renter') ]       
+    async def order_history_request(self,all = None , renter = None):
+        print(f"i get hear::{renter}")
+        if all == "none":
+            all = None
         try:
-            post_requests = await PostRequest().filter(amswer = None , request_reciever_id = self.sender).prefetch_related("post","request_sender").all()
+            if renter == None :
+                if all:
+                    post_requests = await PostRequest().filter(request_reciever_id = self.sender).prefetch_related("post","request_sender").all()  
+                else:
+                    post_requests = await PostRequest().filter(amswer = None , request_reciever_id = self.sender).prefetch_related("post","request_sender").all()
+            else:
+                if all:
+                    post_requests = await PostRequest().filter(request_sender_id = self.sender).prefetch_related("post","request_reciever").all()  
+                else:
+                    post_requests = await PostRequest().filter(amswer = None , request_sender_id = self.sender).prefetch_related("post","request_reciever").all()
+                
             
             print(f"post_requests len {len(post_requests)}")
             if len(post_requests) == 0:
@@ -1386,27 +1459,236 @@ class Manage_User():
             else:
                 m =await self.event.edit("ttt")
                 await bot.delete_messages(entity=self.sender, message_ids= [m.id])
-                for post_request in post_requests:
-                    requester = post_request.request_sender
-                    post = post_request.post
-                    full = await bot(GetFullUserRequest(post_request.request_sender.id))
-                    #print(full)       
-                    #print(full.users[0].username)
-                    user_link = "@" + str(full.users[0].username)
-                    post_text = Post_format_additional.format(user_link,post.phone_number,post.txt_content,str(post.date_and_time),post.address)
-                    m=await bot.send_file( self.sender , post.photo_path ,caption = post_text )
-                    await self.save_all_lest_messag([m.id])
-                    
-                    print(f"post content {post.id} sender {requester.first_name}")
-                    
-                await self.message_sender("אנא בחר" ,  go_buck_to_menu)
+                if renter:
+                    for post_request in post_requests:
+                        reciever = post_request.request_reciever
+                        post = post_request.post
+                        full = await bot(GetFullUserRequest(post_request.request_reciever.id))
+                        #print(full)       
+                        #print(full.users[0].username)
+                        user_link = "@" + str(full.users[0].username)
+                        if all:
+                            post_text = Post_format_additional.format(user_link,post.phone_number,post.txt_content,str(post_request.date)[:16],post.address)
+                            if not post_request.amswer:
+                                answer = "סטטוס : מחכה לאישור"
+                            elif post_request.amswer == "YES":
+                                answer = "סטטוס : מאושר"
+                            else:
+                                answer = "סטטוס : סורב"
+                            post_text = post_text + "\n" + answer
+                            m=await bot.send_file( self.sender , post.photo_path ,caption = post_text )
+                            await self.save_all_lest_messag([m.id])
+                        else:   
+                            #buttons = [[Button.inline(" אישור הבקשה",f'answer_post_Request:{post.id}:{post_request.request_id}:YES')],[Button.inline(" סירוב הבקשה",f'answer_post_Request:{post.id}:{post_request.request_id}:NO')]]
+                            #print(f"mmmmmmmmmmmmm {buttons}")
+                            post_text = Post_format_additional.format(user_link,post.phone_number,post.txt_content,str(post_request.date)[:16],post.address)
+                            m=await bot.send_file( self.sender , post.photo_path ,caption = post_text )
+                            await self.save_all_lest_messag([m.id])
+                    await self.message_sender("לחזרה " , go_buck_to_menu)
+
+                else:
+                    for post_request in post_requests:
+                        requester = post_request.request_sender
+                        post = post_request.post
+                        full = await bot(GetFullUserRequest(post_request.request_sender.id))
+                        #print(full)       
+                        #print(full.users[0].username)
+                        user_link = "@" + str(full.users[0].username)
+                        if all:
+                            post_text = Post_format_additional.format(user_link,requester.phone_number,post.txt_content,str(post_request.date)[:16],post.address)
+                            if not post_request.amswer:
+                                answer = "סטטוס : מחכה לאישור"
+                            elif post_request.amswer == "YES":
+                                answer = "סטטוס : מאושר"
+                            else:
+                                answer = "סטטוס : סורב"
+                            post_text = post_text + "\n" + answer
+                            m=await bot.send_file( self.sender , post.photo_path ,caption = post_text )
+                            await self.save_all_lest_messag([m.id])
+                        else:   
+                            buttons = [[Button.inline(" אישור הבקשה",f'answer_post_Request:{post.id}:{post_request.request_id}:YES')],[Button.inline(" סירוב הבקשה",f'answer_post_Request:{post.id}:{post_request.request_id}:NO')],go_buck_to_menu]
+                            print(f"mmmmmmmmmmmmm {buttons}")
+                            post_text = Post_format_additional.format(user_link,requester.phone_number,post.txt_content,str(post_request.date)[:16],post.address)
+                            post_text+="\n סטטוס: ממתין ל אישור"
+                            m=await bot.send_file( self.sender , post.photo_path ,caption = post_text ,buttons = buttons)
+                            await self.save_all_lest_messag([m.id])
+                        
+                        print(f"post content {post.id} sender {requester.first_name}")
+                    if all:
+                        await self.message_sender("לחזרה " , go_buck_to_menu)
+                
+        
+                #await self.message_sender("אנא בחר" ,  go_buck_to_menu)
         except Exception as e:
             print(f" eror in order_history_request :: {e}")
         
+    async def answer_post_Request(self,post_id,post_requests_id , answer):
+        print(f"the answer is :{answer}")
+        try:
+            if answer == "YES":
+                await PostRequest.filter(request_id = post_requests_id).update(amswer = "YES")
+                await Post.filter(id = post_id).update(is_order = True)
+                ather_posts = await PostRequest.filter(post_id = post_id).all()
+                for post_request in ather_posts:
+                    if int(post_requests_id) != post_request.request_id:
+                        await PostRequest.filter(request_id = post_request.request_id).update(amswer = "NO" , request_text = "הבקשה נדחתה בגלל שהשוכר השכיר כבר את הרכב") 
+                await self.message_sender("הבקשה של הרכב שלך אושרה ונשלחה עדכון למשכיר \n מוזמן ליצור קשר עם שולח הבקשה ולדרך דרך כפתור כל ההזמנות " , go_buck_to_menu)
+            else:
+                await PostRequest.filter(request_id = post_requests_id).update(amswer = "NO")
+                await self.message_sender(" נא לשלוח בהודעת טקסט את סיבת הסירוב \n במקרה שאתה לא מעוניין לתת סיבה חזור לטפריט הראשי" ,go_buck_to_menu)
+                self.user_db.flow= f"add_text_to_post_request:{post_requests_id}"
+                await self.user_db.save()
+        except Exception as e:
+            print(f"poblem in answer_post_Request :: {e}")
     
     
-    async def order_history_answerd(self):
-        return    
+    async def order_history_approved_post_requests(self,as_renter = None):
+        try:
+            if as_renter:
+                post_requests = await PostRequest().filter(amswer = "YES" ,request_sender_id = self.sender).prefetch_related("post","request_reciever").all()
+            else:
+                post_requests = await PostRequest().filter(amswer = "YES" ,request_reciever_id = self.sender).prefetch_related("post","request_sender").all()  
+                
+            print(f"post_requests len {len(post_requests)}")
+            if len(post_requests) == 0:
+                await self.event.edit("אין לך בקשות חדשות " , buttons = go_buck_to_menu)
+            else:
+                m =await self.event.edit("ttt")
+                await bot.delete_messages(entity=self.sender, message_ids= [m.id])
+                for post_request in post_requests:
+                    if as_renter:
+                        other_side = post_request.request_reciever
+                    else:
+                        other_side = post_request.request_sender
+                    post = post_request.post
+                    full = await bot(GetFullUserRequest(other_side.id))
+                    user_link = "@" + str(full.users[0].username)
+                    #grade(self,requst_id ,id_of_ho_you_grader ,step = "0",befor_grade=None, as_renter ="T" ):
+                    
+                        
+                    post_text = Post_format_additional.format(user_link,other_side.phone_number,post.txt_content,str(post_request.date)[:16],post.address)
+                    print(f"the date is :: {str(post_request.date)[:14]}")
+                    answer = "סטטוס : מאושר"
+                    post_text = post_text + "\n" + answer
+                    if as_renter and post_request.step_grade!='F':
+                        button = [Button.inline(" דירוג ",f'grade:{post_request.request_id}:{other_side.id}:{"0"}:1:T')]
+                        m=await bot.send_file( self.sender , post.photo_path ,caption = post_text ,buttons= button)  
+                    elif as_renter: 
+                         m=await bot.send_file( self.sender , post.photo_path ,caption = post_text )
+                    else:
+                        m=await bot.send_file( self.sender , post.photo_path ,caption = post_text )
+                        
+                    await self.save_all_lest_messag([m.id])
+                await self.message_sender("לחזרה " , go_buck_to_menu)
+
+        except Exception as e:
+            print(f"porblem if :: order_history_approved_post_requests ::{e}")
+    
+    async def order_history_refus_post_requests(self,as_renter = None):
+        try:
+            if as_renter:
+                post_requests = await PostRequest().filter(amswer = "NO" ,request_sender_id = self.sender).prefetch_related("post","request_reciever").all()
+            else:
+                post_requests = await PostRequest().filter(amswer = "NO" ,request_reciever_id = self.sender).prefetch_related("post","request_sender").all()  
+                
+            print(f"post_requests len {len(post_requests)}")
+            if len(post_requests) == 0:
+                await self.event.edit("אין לך בקשות חדשות " , buttons = go_buck_to_menu)
+            else:
+                m =await self.event.edit("ttt")
+                await bot.delete_messages(entity=self.sender, message_ids= [m.id])
+                for post_request in post_requests:
+                    if as_renter:
+                        other_side = post_request.request_reciever
+                    else:
+                        other_side = post_request.request_sender
+                    post = post_request.post
+                    full = await bot(GetFullUserRequest(other_side.id))
+                    user_link = "@" + str(full.users[0].username)
+                    post_text = Post_format_additional.format(user_link,other_side.phone_number,post.txt_content,str(post_request.date)[:16],post.address)
+                    answer = "סטטוס : סורב" +f"\n סיבת סירוב :: {post_request.request_text}"
+                    post_text = post_text + "\n" + answer
+                    m=await bot.send_file( self.sender , post.photo_path ,caption = post_text )
+                    await self.save_all_lest_messag([m.id])
+                    
+                await self.message_sender("לחזרה " , go_buck_to_menu)
+        except Exception as e:
+            print(f"porblem if :: order_history_refus_post_requests ::{e}")
             
-    """[Button.inline(" אישורי הזמנות",'order_history_request')],
-            [Button.inline("כל ההזמנות",'order_history_answerd')]  ,"""
+    async def grade(self,requst_id ,id_of_ho_you_grader ,step = "0",befor_grade=None, as_renter ="T" ):
+        try:
+            if as_renter:
+                
+                if step == "0":
+                    buttons = [[Button.inline(" 1 🎖 ",f'grade:{requst_id}:{id_of_ho_you_grader}:{"1"}:1:T')],[Button.inline(" 2 🎖 ",f'grade:{requst_id}:{id_of_ho_you_grader}:{"1"}:2:T')],[Button.inline(" 3 🎖 ",f'grade:{requst_id}:{id_of_ho_you_grader}:{"1"}:3:T')]]
+                    await self.message_sender("נא לדרג את זמינות המשכיר ",buttons)
+                elif step =="1":
+                    requst = await PostRequest.filter(request_id = requst_id).first().prefetch_related("request_reciever")
+                    requst.step_grade = "0"
+                    await requst.save()
+                    renter = requst.request_reciever
+                    grade_amunt = len(await PostRequest.filter(request_reciever_id = renter.id , step_grade = "F").all())
+                    renter.seller_availability_grade = int(renter.seller_availability_grade)*(grade_amunt/(grade_amunt+1))+int(befor_grade)*(1/(grade_amunt+1))
+                    print(f"the new grade is ::{renter.seller_availability_grade}")
+                    await renter.save()
+                    buttons = [[Button.inline(" 1 🎖 ",f'grade:{requst_id}:{id_of_ho_you_grader}:2:1:T')],[Button.inline(" 2 🎖 ",f'grade:{requst_id}:{id_of_ho_you_grader}:2:2:T')],[Button.inline(" 3 🎖 ",f'grade:{requst_id}:{id_of_ho_you_grader}:2:3:T')]]
+                    await self.message_sender("נא לדרג את ניקיון המשכיר ",buttons,"t")
+                elif step =="2":
+                    requst = await PostRequest.filter(request_id = requst_id).first().prefetch_related("request_reciever")
+                    requst.step_grade = "1"
+                    await requst.save()
+                    renter = requst.request_reciever
+                    grade_amunt = len(await PostRequest.filter(request_reciever_id = renter.id , step_grade = "F").all())
+                    renter.seller_cleaning_grade = int(renter.seller_cleaning_grade)*(grade_amunt/(grade_amunt+1))+int(befor_grade)*(1/(grade_amunt+1))
+                    await renter.save()
+                    buttons = [[Button.inline(" 1 🎖 ",f'grade:{requst_id}:{id_of_ho_you_grader}:3:1:T')],[Button.inline(" 2 🎖 ",f'grade:{requst_id}:{id_of_ho_you_grader}:3:2:T')],[Button.inline(" 3 🎖 ",f'grade:{requst_id}:{id_of_ho_you_grader}:3:3:T')]]
+                    await self.message_sender("נא לדרג את אמינות המשכיר ",buttons,"t")
+                elif step =="3":
+                    requst = await PostRequest.filter(request_id = requst_id).first().prefetch_related("request_reciever")
+                    requst.step_grade = "F"
+                    await requst.save()
+                    renter = requst.request_reciever
+                    grade_amunt = len(await PostRequest.filter(request_reciever_id = renter.id , step_grade = "F").all())
+                    renter.sellerre_liability_grade = int(renter.sellerre_liability_grade)*(grade_amunt/(grade_amunt+1))+int(befor_grade)*(1/(grade_amunt+1))
+                    await renter.save()
+                    #buttons = [[Button.inline(" 1 🎖 ",f'grade:{requst_id}:{id_of_ho_you_grader}:3:1:T')],[Button.inline(" 2 🎖 ",f'grade:{requst_id}:{id_of_ho_you_grader}:3:2:T')],[Button.inline(" 2 🎖 ",f'grade:{requst_id}:{id_of_ho_you_grader}:3:3:T')]]
+                    await self.message_sender("תודה שדירגתה את המשכיר",go_buck_to_menu,"t")
+                    
+            else:
+                if step == "0":
+                    self.message_sender("נא לדרג את דירוג השוכר  ")
+        except Exception as e:
+            print(f"problem in grade :: {e}")
+            
+        
+        
+         
+    """seller_payment_grade = fields.IntField(default = 0)
+    seller_availability_grade = fields.IntField(default = 0)
+    seller_cleaning_grade = fields.IntField(default = 0)
+    sellerre_liability_grade = fields.IntField(default = 0)
+    buyer_payment_grade = fields.IntField(default = 0)
+    buyer_availability_grade = fields.IntField(default = 0)
+    buyer_cleaning_grade = fields.IntField(default = 0)
+    buyer_reliability_grade = fields.IntField(default = 0)"""   
+#------------------ admin options
+
+    async def sum_of_users(self):
+        
+        users =await User.all()
+        text = "-----------------------------------------------------------------\n"
+        for user in users:
+            
+            if user.is_admin:
+                text += f"שם:{user.last_name} | שם משפחה:{user.last_name} | מספר טלפון:{user.phone_number} | admin\n"
+            else:
+                text += f"שם:{user.last_name} | שם משפחה:{user.last_name} | מספר טלפון:{user.phone_number} | user\n"    
+            text +="-----------------------------------------------------------------\n"
+        text += f"סך הכול מספר משתמשים במערכת::{len(users)}"
+        await self.message_sender(text,go_buck_to_menu,"TRUE")
+        
+    async def sum_of_posts(self):
+        posts = await Post.all()
+        
+        await self.message_sender(f"כמות הפוסטים במערכת :: {len(posts)}",go_buck_to_menu,"TRUE")
+        

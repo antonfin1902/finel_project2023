@@ -85,3 +85,5 @@ class PostRequest(Model):
     )
     amswer = fields.CharField(max_length=15, null=True , default=None)
     request_text = fields.CharField(max_length=80, null=True)
+    step_grade = fields.CharField(max_length=10, null=True , default=None)
+    date= fields.DatetimeField(auto_now_add=True) 

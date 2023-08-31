@@ -16,6 +16,9 @@ def main_markup():
 def admin_main_markup(): 
     m= main_markup()
     m.append([Button.inline(" אישור משתמשים חדשים",'registration_aproval_list')]) 
+    m.append([Button.inline("מידע על משתמשי המערכת ",'sum_of_users')])
+    m.append([Button.inline("מידע על הפוסטים במערכת ",'sum_of_posts')])
+
     return m
 
 def change_post_option_markup(post_id):
@@ -40,11 +43,24 @@ go_buck_to_main_markup = [Button.inline(" לחץ לחזרה לתפריט הרא�
 
 go_buck_to_menu = [Button.inline(" לחץ לחזרה לתפריט הראשי",'menu')]
 go_buck_to_menu_no_edit = [Button.inline(" לחץ לחזרה לתפריט הראשי",'menu:0:0:F')]
+order_history_byuer_or_seller = [Button.inline("בקשות בתור משכיר",'order_history_option_owner'), Button.inline("בקשות בתור שוכר",'order_history_option_renter') ]
 
 def order_history_option_buttons():  
     markup = [
             [Button.inline(" אישורי הזמנות",'order_history_request')],
-            [Button.inline("כל ההזמנות",'order_history_answerd')]  ,
+            [Button.inline("כל ההזמנות",'order_history_request:all')]  ,
+            [Button.inline("הזמנות שאושרו ",'order_history_approved_post_requests')],
+            [Button.inline("הזמנות שסורבו ",'order_history_refus_post_requests')],
+            go_buck_to_main_markup
+        ]
+    return markup
+
+def order_history_option_buttons_renter():  
+    markup = [
+            [Button.inline(" הזמנות שנשלחו לאישור",'order_history_request:none:renter')],
+            [Button.inline("כל ההזמנות",'order_history_request:all:renter')]  ,
+            [Button.inline("הזמנות שאושרו ",'order_history_approved_post_requests:renter')],
+            [Button.inline("הזמנות שסורבו ",'order_history_refus_post_requests:renter')],
             go_buck_to_main_markup
         ]
     return markup

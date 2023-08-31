@@ -34,12 +34,10 @@ async def message1(event):
 @bot.on(events.CallbackQuery)
 async def callback(event):
     print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-    #print(f"777777{event}")
     sender = await event.get_sender()
     sender = sender.id
     print(f"88888{sender}")
     help =  UserEventHelper(event,sender)
-    #await help.runner("delet_all_messages")
     await uti.delet_all_messages(sender ,event)
     await help.runner('callback_query')
     
@@ -49,20 +47,14 @@ async def callback(event):
 class UserEventHelper:
 
     def __init__(self, event,sender,from_id=None):
-        print("3")
-        # print('Client:', event.stringify())
-        # stg.logger.info(event)
-        
+
         self.manage = Manage_User(event,sender,from_id)
-        #Manage_User(event,sender)
-        print("4")
         return None
 
     async def runner(self, func):
         try:
-            print("5")
+
             check = await self.manage.init_()
-            print(f"check::::{check}")
             if check != None:
                 await getattr(self.manage, func)()
         except Exception as e:
@@ -85,7 +77,6 @@ if __name__ == '__main__':
         except Exception:
             print("problem whit main")
 
-#bot.run_until_disconnected()
 async def check_user(sender):
     user =await User.filter(id = sender)
     return user
