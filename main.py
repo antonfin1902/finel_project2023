@@ -14,11 +14,9 @@ initDbFlag=False
 
 @bot.on(events.NewMessage)
 async def message1(event):
-    print("_-------------------------------------------------------------0-----")
-    #print(event)
+
     sender = await event.get_sender()
     sender = sender.id
-    print(event)
     await uti.delet_all_messages(sender ,event)
     if event.message.message == "/start":
         
@@ -33,10 +31,8 @@ async def message1(event):
 
 @bot.on(events.CallbackQuery)
 async def callback(event):
-    print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     sender = await event.get_sender()
     sender = sender.id
-    print(f"88888{sender}")
     help =  UserEventHelper(event,sender)
     await uti.delet_all_messages(sender ,event)
     await help.runner('callback_query')
