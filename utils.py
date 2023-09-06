@@ -5,7 +5,7 @@ from telethon.sync import TelegramClient
 from os import path
 from tables import *
 import sys
-from settings import bot
+from settings import bot,logging
 from buttons import *
 from manage_user import *
 
@@ -18,7 +18,7 @@ async def user_messages_db_call(sender,event):
         return user_lest_messgas
     except Exception as e:
         await event.respond('Error loading buyer lestMessages from db please try again::', parse_mode='html' ,buttons=main_markup())
-        print("Error loading buyer lestMessages from db please try again::",e)
+        logging.error(f"Error loading buyer lestMessages from db please try again::{e}")
         return None
     
     
@@ -27,11 +27,9 @@ async def delet_all_messages(sender ,event):
     buyer =await user_messages_db_call(sender ,event)
     deleteList=[]
     if buyer is None:
-        print("hamana-hamana")
         pass
     else:
         try:
-            print("hamana-hamana2")
             async for message in buyer:
                 if message == None:
                     break
@@ -41,4 +39,4 @@ async def delet_all_messages(sender ,event):
             for messageId in deleteList: 
                 await UserMessages().filter(id=messageId).delete()
         except Exception as e:
-            print(f"eror in deliting message ::{e}")
+            logging.error(f"eror in deliting message ::{e}")

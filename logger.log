@@ -1,0 +1,30 @@
+2023-09-05 15:24:17 INFO Connecting to 149.154.167.92:443/TcpFull...
+2023-09-05 15:24:17 INFO Connection to 149.154.167.92:443/TcpFull complete!
+2023-09-05 15:24:18 INFO trying to create database
+2023-09-05 15:24:18 INFO database is created
+2023-09-05 15:24:45 ERROR 12
+2023-09-05 15:24:45 ERROR 13
+2023-09-05 15:25:01 ERROR 12
+2023-09-05 15:25:01 ERROR 13
+2023-09-05 15:25:07 ERROR 12
+2023-09-05 15:25:07 ERROR 13
+2023-09-05 15:25:50 INFO Starting direct file download in chunks of 131072 at 0, stride 131072
+2023-09-05 15:25:51 ERROR 12
+2023-09-05 15:25:51 ERROR 13
+2023-09-05 15:25:51 ERROR exception raised in add_post function car_model or car_photo step :: Cannot open exclusive conversation in a chat that already has one open conversation
+2023-09-05 15:25:51 INFO Got difference for account updates
+2023-09-05 15:26:02 ERROR 12
+2023-09-05 15:26:02 ERROR 13
+2023-09-05 15:26:07 ERROR 12
+2023-09-05 15:26:07 ERROR 13
+2023-09-05 15:26:10 ERROR 12
+2023-09-05 15:26:10 ERROR 13
+2023-09-05 15:26:17 ERROR 12
+2023-09-05 15:26:17 ERROR 13
+2023-09-05 15:26:25 ERROR 12
+2023-09-05 15:26:25 ERROR 13
+2023-09-05 15:26:25 ERROR check horsepowerגדככגדid1
+2023-09-05 15:26:29 ERROR 12
+2023-09-05 15:26:29 ERROR 13
+2023-09-05 15:26:29 ERROR check txt_contentדגכדגכדid1
+2023-09-05 15:26:29 ERROR exception raised in add_post function km step:invalid literal for int() with base 10: 'גדכגדכ'

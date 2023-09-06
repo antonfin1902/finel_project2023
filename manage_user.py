@@ -1,6 +1,5 @@
 
 from ast import Break
-from logging import exception
 import os
 from typing import Final
 from telethon import types
@@ -23,8 +22,9 @@ from text_formats import *
 from telethon.tl.functions.users import GetFullUserRequest
 
 class Manage_User():
-    #A regular constructor
+    
     def __init__(self, event,sender,from_id =None):
+        #A regular constructor
         self.event = event
         self.sender = sender
         self.chat_id = event.chat_id
@@ -39,8 +39,8 @@ class Manage_User():
             self.text = None
         return None
 
-    #asynchronous constructor
     async def init_(self):
+        #asynchronous constructor
         if self.from_id !=None or self.sender==BOT_USER_ID  :
             return None
         try:
@@ -50,7 +50,7 @@ class Manage_User():
                 try:
                     os.mkdir(user_photo_folder_path)
                 except Exception as e:
-                    print(f"exception raised in init_ mkdir :: {e}")
+                    logging.error(f"exception raised in init_ mkdir :: {e}")
                 self.user_db = User(id = self.sender , flow = "user_registration_first_name",photo_dir=user_photo_folder_path)
                 await self.user_db.save()
                 await self.message_sender("ברוך הבא לtelecar בוט השכרת הרכב הטוב ביותר. מה שנשאר זה רק להרשם\n נא לשלוח הודעת טקסט עם שמך")
@@ -62,11 +62,11 @@ class Manage_User():
                 return True
                 
         except AttributeError as e:
-            print(f"exception raised in init_ :: {e}")
+            logging.error(f"exception raised in init_ :: {e}")
             return None
         
-    # New user approval list 
     async def registration_aproval_list(self):
+        # New user approval list
         m =await self.event.edit("ttt")
         await bot.delete_messages(entity=self.sender, message_ids= [m.id])
         not_aproval_list = await User.filter(registration_step = False).all()
@@ -81,9 +81,9 @@ class Manage_User():
             
             await self.save_all_lest_messag(message_list)
             await self.message_sender("לחזרה לתפריט" , go_buck_to_menu)
-
-    # New user approv           
+           
     async def registration_aprov(self,user_id ,delete_or_aprov):
+        # New user approv function
         if delete_or_aprov == "A":
             user = await User.filter(id = user_id).update(registration_step = True)
             full = await bot(GetFullUserRequest(self.sender))
@@ -96,14 +96,14 @@ class Manage_User():
             await bot.send_message(int(user_id ) , message="המנהל לא אישר את הוספתכם למערכת")
             await User.filter(id = user_id).delete()
             await self.event.edit("  הסירוב בוצע בהצלחה", buttons=go_buck_to_menu)
-            
-    #restart the fllow of the user        
+                   
     async def restart_flow(self):
+        #restart the fllow of the user 
         self.user_db.flow = None
         await self.user_db.save()
-
-    #sends a relevant message with a relevant button menu        
+       
     async def menu(self, message =None, markup = None, edit = True):
+        #sends a relevant message with a relevant button menu 
         await self.restart_flow()
         if markup == '0' and edit == 'F':
             markup = None
@@ -125,16 +125,14 @@ class Manage_User():
             else:
                 await self.event.respond(message , buttons = markup)
      
-    #Checks if the message has arrived from private chat so it will not be possible to send messages from the groups chat
     async def message(self):
-        print(12)
+        #Checks if the message has arrived from private chat so it will not be possible to send messages from the groups chat
         if self.event.message.is_private:
-            print(13)
             await self.private_message()
             return
 
-    #send the message (parameter) and buttons and save in db (after callback this message will be deleted )
     async def message_sender(self,message,markup=None ,edit =None):
+        #send the message (parameter) and buttons and save in db (after callback this message will be deleted )
         m=None
         if markup is None and edit == None:
             m = await self.event.respond(message)
@@ -146,9 +144,9 @@ class Manage_User():
         else:
             m = await self.event.respond( message ,buttons = markup)    
         return m
- 
-    #calls the suitable function by attribute flow     
+      
     async def private_message(self):
+        #calls the suitable function by attribute flow
         if self.user_db.flow is None:
            self.user_db.flow = "editoe" 
         if self.user_db.flow == "user_registration_first_name":
@@ -298,9 +296,9 @@ class Manage_User():
             if self.is_admin:
                 markup=admin_main_markup()
             await self.message_sender("הודעתך נקלטה אך המערכת לא מחכה להודעות \n אנא בחר",markup)
-
-    #save list of message ids in the db attribute lest_messages     
+     
     async def save_all_lest_messag(self,m_ids):
+        #save list of message ids in the db attribute lest_messages
         try:
             for m_id in m_ids:
                 newMessage = UserMessages(id = m_id , user_id = self.sender )
@@ -310,10 +308,10 @@ class Manage_User():
             if self.is_admin:
                 markup=admin_main_markup()
             await self.event.respond('Error loading func save_all_lest_messag please try again::', parse_mode='html' ,buttons=markup)
-            print(f"exception raised in save_all_lest_messag function :: {e}")
+            logging.error(f"exception raised in save_all_lest_messag function :: {e}")
 
-    #Displays data about user's profile
     async def user_profile(self):
+        #Displays data about user's profile
         try:
             grade_amunt = len(await PostRequest.filter(request_reciever_id = self.sender, step_grade = "F").all())
             if  grade_amunt !=0: 
@@ -322,10 +320,10 @@ class Manage_User():
                 user_text= User_format1.format(self.user_db.first_name,self.user_db.last_name,self.user_db.email,self.user_db.phone_number)
             await self.event.edit(user_text,buttons= go_buck_to_menu)
         except Exception as e:
-            print(f"exception raised in user_profile:: {e}")
+            logging.error(f"exception raised in user_profile:: {e}")
     
-    #Displays the posts that the user has created
-    async def my_posts(self,page=0):    
+    async def my_posts(self,page=0):  
+        #Displays the posts that the user has created  
         if type(page)is int:
             m =await self.event.edit("ttt")
             await bot.delete_messages(entity=self.sender, message_ids= [m.id])
@@ -347,7 +345,7 @@ class Manage_User():
                 page_post = posts[first_post_index:]
                 next_flag=False
         except Exception as e:
-            print(f"exception raised in my_posts function :: {e}")
+            logging.error(f"exception raised in my_posts function :: {e}")
         try:
             for post in page_post:
                 post_text = Post_format.format(post.car_company,post.car_model,post.car_type,post.car_production_year,post.Engine_capacity,post.horsepower,str(post.from_date)[:10],str(post.to_date)[:10],post.txt_content,post.km,post.cost)
@@ -357,7 +355,7 @@ class Manage_User():
                     m=await bot.send_file( self.sender , post.photo_path ,caption = post_text )
                     await self.save_all_lest_messag([m.id])
         except Exception as e:
-            print(f"exception raised in my_posts function :: {e}")
+            logging.error(f"exception raised in my_posts function :: {e}")
             
         next_page_button =[Button.inline(" >>",f'my_posts:{page+1}')]
         prev_page_button =[Button.inline(" <<",f'my_posts:{page-1}')]
@@ -377,9 +375,9 @@ class Manage_User():
         move_page_markup.append(go_buck_to_menu_no_edit)
         m=await self.event.respond(f"מספר דף:{page}", buttons=move_page_markup)
         await self.save_all_lest_messag([m.id])
-       
-    #Creates a post and at each stage adds information to it depends on the db attribute user.flow 
+         
     async def add_post(self,flow = None):
+        #Creates a post and at each stage adds information to it depends on the db attribute user.flow 
         if flow is None:
             try:
                 self.post_in_work = await Post(owner_id=self.sender).save()
@@ -387,7 +385,7 @@ class Manage_User():
                 await self.user_db.save()
                 await self.event.edit("נא להוסיף את שם חברת יצרן הרכב . לדוגמא יונדאי,פורד, טסלה וכדומה")
             except Exception as e:
-                print(f"exception raised in add_post function first step :: {e}")
+                logging.error(f"exception raised in add_post function first step :: {e}")
                 await self.message_sender("!משהו השתבש בהכנסת חברת הרכב אנא נסו שוב")
         elif flow == "car_company":
             try:
@@ -398,7 +396,7 @@ class Manage_User():
                 await self.user_db.save()
                 await self.message_sender("נא להוסיף את סוג הרכב ")
             except Exception as e:
-                print(f"exception raised in add_post function car_company step:: {e}")
+                logging.error(f"exception raised in add_post function car_company step:: {e}")
                 self.user_db.flow= "add_post:car_company"
                 await self.message_sender("משהו השתבש בהכנסת יצרן הרכב אנא נסו שוב")
 
@@ -413,7 +411,7 @@ class Manage_User():
                     await self.user_db.save()
                     flow = "car_photo" 
                 except Exception as e:
-                    print(f"exception raised in add_post function car_type step:{e}")
+                    logging.error(f"exception raised in add_post function car_type step:{e}")
                     
             
                 
@@ -450,7 +448,7 @@ class Manage_User():
                         self.user_db.flow= "add_post:car_photo"
                         await self.user_db.save()
                 except Exception as e:
-                    print(f"exception raised in add_post function car_model or car_photo step :: {e}")
+                    logging.error(f"exception raised in add_post function car_model or car_photo step :: {e}")
         
         elif flow == "car_model":
             try:
@@ -461,7 +459,7 @@ class Manage_User():
                 await self.user_db.save()
                 await self.message_sender("נא לשלוח את שנת היצור של הרכב")
             except Exception as e:
-                print(f"exception raised in add_post function car_model step:{e}")
+                logging.error(f"exception raised in add_post function car_model step:{e}")
                 self.user_db.flow= "add_post:car_model"
                 await self.user_db.save()
                 await self.message_sender("משהו השתבש בהכנסת שם הדגם, אנא נסו שוב")
@@ -477,7 +475,7 @@ class Manage_User():
                 await self.user_db.save()
                 await self.message_sender("נא להוסיף את הנפח המנוע בליטרים")
             except Exception as e:
-                print(f"exception raised in add_post function car_production_year step :{e}")
+                logging.error(f"exception raised in add_post function car_production_year step :{e}")
                 self.post_in_work = await Post().filter(Q(Q(owner_id=self.sender), Q(data_is_full=False), join_type="AND")).first()
                 self.user_db.flow= "add_post:car_production_year"
                 await self.user_db.save()
@@ -493,7 +491,7 @@ class Manage_User():
                 await self.user_db.save()
                 await self.message_sender("נא להוסיף את כוחות הסוס של הרכב ")
             except Exception as e:
-                print(f"exception raised in add_post function Engine_capacity step:{e}")
+                logging.error(f"exception raised in add_post function Engine_capacity step:{e}")
                 self.user_db.flow= "add_post:Engine_capacity"
                 await self.user_db.save()
                 await self.message_sender("משהו השתבש בהכנסת מספר הנפח המנוע אנא נסו שוב")
@@ -509,7 +507,7 @@ class Manage_User():
                 await self.user_db.save()
                 await self.message_sender("נא להוסיף תוכן הפוסט ואת תאריכי הזמינות של הרכב לדוגמא: 22.3-28.3")
             except Exception as e:
-                print(f"exception raised in add_post function horsepower step:{e}")
+                logging.error(f"exception raised in add_post function horsepower step:{e}")
                 self.user_db.flow= "add_post:horsepower"
                 await self.user_db.save()
                 await self.message_sender("משהו השתבש בהכנסת מספר כוחות סוס אנא נסו שוב")
@@ -519,14 +517,14 @@ class Manage_User():
         elif flow == "txt_content":
             try:
                 self.post_in_work = await Post().filter(Q(Q(owner_id=self.sender), Q(data_is_full=False), join_type="AND")).first()
-                print(f"check horsepower{self.post_in_work.horsepower}id{self.post_in_work.id}")
+                logging.error(f"check horsepower{self.post_in_work.horsepower}id{self.post_in_work.id}")
                 self.post_in_work.txt_content = self.text
                 await self.post_in_work.save()
                 self.user_db.flow= "add_post:km"
                 await self.user_db.save()
                 await self.message_sender("נא להוסיף את הקילומטרז של הרכב")
             except Exception as e:
-                print(f"exception raised in add_post function txt_content step:{e}")
+                logging.error(f"exception raised in add_post function txt_content step:{e}")
                 self.user_db.flow= "add_post:txt_content"
                 await self.user_db.save()
                 await self.message_sender("משהו השתבש בהכתיבת הטקסט, אנא נסו שוב")
@@ -536,14 +534,14 @@ class Manage_User():
         elif flow == "km":
             try:
                 self.post_in_work = await Post().filter(Q(Q(owner_id=self.sender), Q(data_is_full=False), join_type="AND")).first()
-                print(f"check txt_content{self.post_in_work.txt_content}id{self.post_in_work.id}")
+                logging.error(f"check txt_content{self.post_in_work.txt_content}id{self.post_in_work.id}")
                 self.post_in_work.km = self.text
                 await self.post_in_work.save()
                 self.user_db.flow= "add_post:address"
                 await self.user_db.save()
                 await self.message_sender("נא להוסיף כתובת לאיסוף")
             except Exception as e:
-                print(f"exception raised in add_post function km step:{e}")
+                logging.error(f"exception raised in add_post function km step:{e}")
                 self.user_db.flow= "add_post:km"
                 await self.user_db.save()
                 await self.message_sender("משהו השתבש בהכנסת מספר הקילומטרים אנא נסו שוב")
@@ -558,7 +556,7 @@ class Manage_User():
                 await self.user_db.save()
                 await self.message_sender("נא להוסיף את מספר הטלפון")    
             except Exception as e:
-                print(f"exception raised in add_post function address step:{e}")
+                logging.error(f"exception raised in add_post function address step:{e}")
                 self.user_db.flow= "add_post:address"
                 await self.user_db.save()
                 await self.message_sender("משהו השתבש בהכנסת מספר הכתובת אנא נסו שוב")
@@ -574,7 +572,7 @@ class Manage_User():
                 await self.user_db.save()
                 await self.message_sender("נא להוסיף אתה אזור האיסוף של הרכב")    
             except Exception as e:
-                print(f"exception raised in add_post function area step:{e}")
+                logging.error(f"exception raised in add_post function area step:{e}")
                 self.user_db.flow= "add_post:phone_number"
                 self.user_db.save()
                 await self.message_sender("משהו השתבש בהכנסת מספר הטלפון אנא נסו שוב")
@@ -589,7 +587,7 @@ class Manage_User():
                 await self.user_db.save()
                 await self.message_sender("נא להוסיף אתה מחיר השכרת רכב פר יום")    
             except Exception as e:
-                print(f"exception raised in add_post function phone_number step:{e}")                
+                logging.error(f"exception raised in add_post function phone_number step:{e}")                
                 self.user_db.flow= "add_post:area"
                 self.user_db.save()
                 await self.message_sender("משהו השתבש בהכנסת האזור אנא נסו שוב")
@@ -607,7 +605,7 @@ class Manage_User():
                     markup=admin_main_markup()
                 await self.message_sender("הפוסט שלך פורסם בהצלחה ניתן יהיה לראות אותו בפוסטים שלי",markup = markup)   
             except Exception as e:
-                print(f"exception raised in add_post function cost step:{e}")
+                logging.error(f"exception raised in add_post function cost step:{e}")
                 self.post_in_work.cost= None
                 self.post_in_work.data_is_full = False
                 self.post_in_work.save()
@@ -620,9 +618,9 @@ class Manage_User():
         if self.is_admin:
             markup=admin_main_markup()
         await self.message_sender("אנא בחר ",markup)
-    
-    #calls the suitable function by attribute data from the event obj    
+       
     async def callback_query(self):
+        #calls the suitable function by attribute data from the event obj 
         try:
             data = self.event.data.decode("utf-8").split(':')
             if len(data) > 1:
@@ -630,10 +628,10 @@ class Manage_User():
             else:
                 await getattr(self, data[0])()
         except Exception as e:
-            print(f"exception raised in callback query :{e}" )
+            logging.error(f"exception raised in callback query :{e}" )
             
-    #shows all your posts and gives you options to choose wat post to delete  
     async def delete_post_choice(self,page=0):
+        #shows all your posts and gives you options to choose wat post to delete  
         try:
             if type(page) is str:
                 page = int(page)
@@ -658,7 +656,7 @@ class Manage_User():
                     markup.append([Button.inline(f"{post.date_and_time}",f'delete_post:{post.id}')])
                 
             except Exception as e:
-                print(f"exception raised in delete_post_choice :{e}")
+                logging.error(f"exception raised in delete_post_choice :{e}")
             next_page_button =Button.inline(" >>",f'delete_post_choice:{page+1}')
             prev_page_button =Button.inline(" <<",f'delete_post_choice:{page-1}')
             move_page_markup=[]
@@ -676,18 +674,19 @@ class Manage_User():
             markup.append(move_page_markup)
             await self.message_sender(f"מספר דף:{page}" + "\nנא לבחור איזה פוסט למחוק",markup , True)
         except Exception as e:
-            print(f"exception raised in delete_post_choice :{e}")
+            logging.error(f"exception raised in delete_post_choice :{e}")
         
     async def delete_post(self,post_id):
         try:
             await Post.filter(id = post_id).delete()
             await self.message_sender(f"פוסט מספר::{post_id} נמחק בהצלחה",go_buck_to_main_markup)
         except Exception as e:
-            print(f"exception raised in delete_post_choice :: {e}")
+            logging.error(f"exception raised in delete_post_choice :: {e}")
             
     #------------------------------------------------------------------------ CHANGE POST FUNCTIONS
-    #deletes the post and displays a message that it has been successfully deleted       
+         
     async def change_post_choice(self,page=0):
+        #shows all your posts and gives you options to choose wat post to delete  
         if type(page) is str:
             page = int(page)
         next_flag=True
@@ -710,7 +709,7 @@ class Manage_User():
                 markup.append([Button.inline(f"{post.date_and_time}",f'change_post:{post.id}')])
                
         except Exception as e:
-            print(f"exception raised in change_post_choice :: {e}")
+            logging.error(f"exception raised in change_post_choice :: {e}")
             
         await self.message_sender("נא לבחור איזה פוסט תרצה לשנות",markup,True)
     
@@ -732,8 +731,8 @@ class Manage_User():
         
         await self.message_sender(f"מספר דף:{page}",move_page_markup)
                
-    #checks what you would like to change in the post and directs you to the appropriate function
     async def change_post(self,post_id):
+        #checks what you would like to change in the post and directs you to the appropriate function
         await self.message_sender("נא לבחור איזה פרט תרצה לשנות",change_post_option_markup(post_id),True)  
         
     async def change_post_car_company(self,post_id):
@@ -797,9 +796,9 @@ class Manage_User():
         await self.message_sender(message = "נא לשלוח בהודעת טקסט את המחיר החדש ",edit = True)
 
     # ------------------------------------------------------------------------ post by area
-    #Selecting the display of posts by area
+    
     async def choose_post_area(self):
-     
+        #Selecting the display of posts by area
         all_posts = await Post.filter(is_order = False).all()
         area_list=[]
         for post in all_posts:
@@ -813,9 +812,9 @@ class Manage_User():
         m = await self.message_sender("נא לבחור את אזור הפוסטים",markup , True)
         await self.save_all_lest_messag([m.id])
     
-    #paging the posts to make it easier to read  them  by area
+    
     async def area_paging(self,area,page = 0):
-        
+        #paging the posts to make it easier to read  them  by area
         if type(page)is str:
             page = int(page)
         posts = await Post.filter(area = area ,is_order = False ).all()
@@ -842,7 +841,7 @@ class Manage_User():
                         m=await bot.send_file( self.sender , post.photo_path ,caption = post_text, buttons = [Button.inline(" לפרטים",f'additional_info_screen:{post.id}:{None}:{None}:{page}:{area}')])
                         await self.save_all_lest_messag([m.id])
             except Exception as e:
-                print(f"exception raised in area_paging :: {e}")
+                logging.error(f"exception raised in area_paging :: {e}")
 
             next_page_button =Button.inline(" >>",f'area_paging:{area}:{page+1}')
             prev_page_button =Button.inline(" <<",f'area_paging:{area}:{page-1}')
@@ -866,8 +865,9 @@ class Manage_User():
         await self.message_sender("הכול בסדר",go_buck_to_main_markup)
     
    #----elad------------
-   #search message sender whit search bottons
+   
     async def search(self):
+        #search message sender whit search bottons
         m= [[Button.inline("חפש לפי שם חברת הרכב",'search_by_car_company')],
             [Button.inline("חפש לפי שם הרכב",'search_by_car_name')],
             [Button.inline(" חפש לפי סוג רכב ",'search_by_car_type')],
@@ -947,8 +947,9 @@ class Manage_User():
         self.user_db.flow = f"search_filter:{filter}"
         await self.user_db.save()
     #---------------------------------------------------------------
-    #paging the posts to make it easier to read  them by search
+    
     async def search_filter(self ,filter_type,query, page = 0 ):
+        #paging the posts to make it easier to read  them by search
         if type(page) is str:
             page = int(page)
         next_flag=True
@@ -986,7 +987,7 @@ class Manage_User():
                         m=await bot.send_file( self.sender , post.photo_path ,caption = post_text , buttons= [Button.inline(" לפרטים",f'additional_info_screen:{post.id}:{filter_type}:{query}:{page}')])
                         await self.save_all_lest_messag([m.id])
             except Exception as e:
-                print(f"exception raised in search_filter ::{e}")
+                logging.error(f"exception raised in search_filter ::{e}")
 
             next_page_button =Button.inline(" >>",f'search_filter:{filter_type}:{query}:{page+1}')
             prev_page_button =Button.inline(" <<",f'search_filter:{filter_type}:{query}:{page-1}')
@@ -1005,9 +1006,9 @@ class Manage_User():
             markup.append(go_buck_to_menu_no_edit)
             m = await self.message_sender(f"מספר דף:{page}",markup)
             await self.save_all_lest_messag([m.id])
- 
-    # info about the post           
+           
     async def additional_info_screen(self,post_id,filter,query,page ,area = None):
+        # info about the post 
             try:
 
                 post1 = await Post().filter(id = post_id).all()
@@ -1029,32 +1030,31 @@ class Manage_User():
                     m=await bot.send_file( self.sender , post.photo_path ,caption = post_text , buttons = buttons)
                     await self.save_all_lest_messag([m.id])
             except Exception as e:
-                print(f"exception raised in additional_info_screen ::{e}")
-    
-    #sent request to the owner of the car                         
+                logging.error(f"exception raised in additional_info_screen ::{e}")
+                          
     async def send_post_Request(self,post_id):
+        #sent request to the owner of the car   
         try:
             post = await Post().filter(id = post_id).prefetch_related("owner").first()
             request = await PostRequest(post_id = post_id , request_sender_id = self.sender , request_reciever_id = post.owner.id).save()
             await self.message_sender(f" הפוסט נשלח לאישור בהצלחה",go_buck_to_menu)
             
         except Exception as e:
-            print(f"exception raised in send_post_Request :: {e}")
-    
-    #displey order_history buttons options    
+            logging.error(f"exception raised in send_post_Request :: {e}")
+       
     async def order_history(self):
+        #displey order_history buttons options 
         await self.event.edit("אנא בחר" , buttons = order_history_byuer_or_seller)
     
-    #displey order_history buttons options as owner
     async def order_history_option_owner(self):
         await self.event.edit("אנא בחר" , buttons = order_history_option_buttons())
     
-    #displey order_history buttons options as renter
     async def order_history_option_renter(self):
+        #displey order_history buttons options as renter
         await self.event.edit("אנא בחר" , buttons = order_history_option_buttons_renter())
     
-    #displey all requests as owner 
     async def order_history_request(self,all = None , renter = None):
+        #displey all requests as owner 
         if all == "none":
             all = None
         try:
@@ -1126,10 +1126,10 @@ class Manage_User():
                         await self.message_sender("לחזרה " , go_buck_to_menu)
 
         except Exception as e:
-            print(f" exception raised in order_history_request :: {e}")
-    
-    #displey selected request as owner    
+            logging.error(f" exception raised in order_history_request :: {e}")
+        
     async def answer_post_Request(self,post_id,post_requests_id , answer):
+        #displey selected request as owner
         try:
             if answer == "YES":
                 await PostRequest.filter(request_id = post_requests_id).update(amswer = "YES")
@@ -1145,7 +1145,7 @@ class Manage_User():
                 self.user_db.flow= f"add_text_to_post_request:{post_requests_id}"
                 await self.user_db.save()
         except Exception as e:
-            print(f"exception raised in answer_post_Request :: {e}")
+            logging.error(f"exception raised in answer_post_Request :: {e}")
     
     async def order_history_approved_post_requests(self,as_renter = None):
         try:
@@ -1154,7 +1154,7 @@ class Manage_User():
             else:
                 post_requests = await PostRequest().filter(amswer = "YES" ,request_reciever_id = self.sender).prefetch_related("post","request_sender").all()  
                 
-            print(f"post_requests len {len(post_requests)}")
+            logging.error(f"post_requests len {len(post_requests)}")
             if len(post_requests) == 0:
                 await self.event.edit("אין לך בקשות חדשות " , buttons = go_buck_to_menu)
             else:
@@ -1169,7 +1169,7 @@ class Manage_User():
                     full = await bot(GetFullUserRequest(other_side.id))
                     user_link = "@" + str(full.users[0].username)
                     post_text = Post_format_additional.format(user_link,other_side.phone_number,post.txt_content,str(post_request.date)[:16],post.address)
-                    print(f"the date is :: {str(post_request.date)[:14]}")
+                    logging.error(f"the date is :: {str(post_request.date)[:14]}")
                     answer = "סטטוס : מאושר"
                     post_text = post_text + "\n" + answer
                     if as_renter and post_request.step_grade!='F':
@@ -1184,7 +1184,7 @@ class Manage_User():
                 await self.message_sender("לחזרה " , go_buck_to_menu)
 
         except Exception as e:
-            print(f"porblem if :: order_history_approved_post_requests ::{e}")
+            logging.error(f"porblem if :: order_history_approved_post_requests ::{e}")
     
     async def order_history_refus_post_requests(self,as_renter = None):
         try:
@@ -1213,10 +1213,10 @@ class Manage_User():
                     
                 await self.message_sender("לחזרה " , go_buck_to_menu)
         except Exception as e:
-            print(f"porblem if :: order_history_refus_post_requests ::{e}")
-    
-    #grade as renter or as owner         
+            logging.error(f"porblem if :: order_history_refus_post_requests ::{e}")
+             
     async def grade(self,requst_id ,id_of_ho_you_grader ,step = "0",befor_grade=None, as_renter ="T" ):
+        #grade as renter or as owner the other side
         try:
             if as_renter:
                 
@@ -1257,11 +1257,12 @@ class Manage_User():
                 if step == "0":
                     self.message_sender("נא לדרג את דירוג השוכר  ")
         except Exception as e:
-            print(f"exception raised in grade :: {e}")
+            logging.error(f"exception raised in grade :: {e}")
              
     #------------------ admin options
-    #display info abut all users in the system 
+    
     async def sum_of_users(self): 
+        #display info abut all users in the system 
         users =await User.all()
         text = "-----------------------------------------------------------------\n"
         for user in users:
@@ -1273,9 +1274,9 @@ class Manage_User():
             text +="-----------------------------------------------------------------\n"
         text += f"סך הכול מספר משתמשים במערכת::{len(users)}"
         await self.message_sender(text,go_buck_to_menu,"TRUE")
-    
-    #display info abut all posts in the system     
+        
     async def sum_of_posts(self):
+        #display info abut all posts in the system 
         posts = await Post.all()
         await self.message_sender(f"כמות הפוסטים במערכת :: {len(posts)}",go_buck_to_menu,"TRUE")
         

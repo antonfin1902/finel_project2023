@@ -5,7 +5,7 @@ from telethon.sync import TelegramClient
 from os import path
 from tables import *
 import sys
-from settings import bot
+from settings import bot ,logging
 from buttons import *
 from manage_user import *
 import utils as uti
@@ -57,9 +57,10 @@ class UserEventHelper:
             print(f"from user event helper:{e} ")
             
 async def main():
-    print("trying to create database")
+    
+    logging.info("trying to create database")
     await database.init()
-    print("database is created")
+    logging.info("database is created")
     await asyncio.gather(bot.run_until_disconnected())
 
 
